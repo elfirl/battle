@@ -27,19 +27,20 @@ hielixer = Item('Mega Elixer', 'elixer', 'Fully restores party\'s HP/MP', 9999)
 grenade = Item('Grenade', 'attack', 'Deals 500 damage', 500)
 
 player_spells = [fire, thunder,blizzard, meteor, cure, cura]
+enemy_spells = [fire, meteor, cure]
 player_items = [{'item': potion, 'quantity': 15}, {'item': hipotion, 'quantity': 5},
                 {'item': superpotion, 'quantity': 5}, {'item': elixer, 'quantity': 5},
                 {'item': hielixer, 'quantity': 2}, {'item': grenade, 'quantity': 5}]
 
 # Create Pawns
 # entity_name = Spell(name, hp, mp, atk, df, magic, items)
-player1 = Person('ElfIRL:     ', 3460, 300, 132, 34, player_spells, player_items)
-player2 = Person('Jade:       ', 1460, 288, 188, 34, player_spells, player_items)
-player3 = Person('Sixdemonbag:', 5460, 400, 174, 34, player_spells, player_items)
+player1 = Person('ElfIRL     ', 3460, 300, 132, 34, player_spells, player_items)
+player2 = Person('Jade       ', 1460, 288, 188, 34, player_spells, player_items)
+player3 = Person('Sixdemonbag', 5460, 400, 174, 34, player_spells, player_items)
 
-enemy1 = Person('Janus', 18200, 701, 451, 25, [], [])
-enemy2 = Person('Imp  ', 1250, 130, 475, 325, [], [])
-enemy3 = Person('Imp  ', 1250, 130, 475, 325, [], [])
+enemy1 = Person('Janus', 18200, 701, 451, 25, enemy_spells, [])
+enemy2 = Person('Imp  ', 1250, 130, 475, 325, enemy_spells, [])
+enemy3 = Person('Imp  ', 1250, 130, 475, 325, enemy_spells, [])
 
 players = [player1, player2, player3]
 enemies = [enemy2, enemy1, enemy3]
@@ -143,13 +144,7 @@ while running:
           print(enemies[enemy].name.replace(' ', '') + ' has died.')
           del enemies[enemy]
 
-  enemy_choice = 1
-  target = random.randrange(len(players))
-  enemy_dmg = enemies[0].generate_damage()
-
-  players[target].take_damage(enemy_dmg)
-  print('Enemy attacks for', enemy_dmg, 'points of damage.')
-
+  # Check if battle is over
   defeated_enemies = 0
   defeated_players = 0
 
@@ -161,11 +156,43 @@ while running:
     if player.get_hp() == 0:
       defeated_players += 1
 
+  # Check if player won
   if defeated_enemies == 3:
     print(bcolors.OKGREEN + 'You win! \n' + bcolors.ENDC)
     running = False
 
+  # Check if enemy won
   elif defeated_players == 3:
     print(bcolors.FAIL + 'Your enemies have defeated you!' + bcolors.ENDC)
     running = False
 
+  print('\n')
+  # Enemy attack phase
+  for enemy in enemies:
+    enemy_choice = random.randrange(0, 2)
+
+    if enemy_choice == 0:
+      # Chose Attack
+      target = random.randrange(0, 3)
+      enemy_dmg = enemy.generate_damage()
+
+      players[target].take_damage(enemy_dmg)
+      print(enemy.name.replace(' ', '') + ' attacks ' + players[target].name.replace(' ', '') + ' for', enemy_dmg, 'points of damage.')
+
+    elif enemy_choice == 1:
+      spell, magic_dmg = enemy.choose_enemy_spell()
+      enemy.reduce_mp(spell.cost)
+
+      if spell.type == 'white':
+        enemy.heal(magic_dmg)
+        print(bcolors.OKBLUE + spell.name + ' heals ' + enemy.name.replace(' ', '') + ' for', str(magic_dmg), 'HP.' + bcolors.ENDC)
+      elif spell.type == 'black':
+        target = random.randrange(0, 3)
+        players[target].take_damage(magic_dmg)
+
+        print(bcolors.OKBLUE + enemy.name.replace(' ', '') + '\'s ' + spell.name + ' deals', str(magic_dmg), 'points of damage to ' + players[target].name.replace(' ', '') + bcolors.ENDC)
+
+        if players[target].get_hp() == 0:
+          print(players[target].name.replace(' ', '') + ' has died.')
+          del players[target]
+      # print('Enemy chose', spell, 'damage is', magic_dmg)
