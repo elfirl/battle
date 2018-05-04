@@ -166,13 +166,13 @@ class Person:
     else:
       current_mp = mp_string
 
-    print('                         _________________________             __________')
+    print('                        _________________________             __________')
     print(bcolors.BOLD + self.name +'  ' +
       current_hp + ' |' + bcolors.OKGREEN + hp_bar + bcolors.ENDC + '|   ' +
       current_mp + ' |' + bcolors.OKBLUE + mp_bar + bcolors.ENDC + '|')
 
   def choose_enemy_spell(self):
-    magic_choice = random.randrange(0, len(self.magic))
+    magic_choice = random.randrange(0, 3)
     spell = self.magic[magic_choice]
     magic_dmg = spell.generate_damage()
 
